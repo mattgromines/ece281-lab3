@@ -110,6 +110,34 @@ begin
        w_reset <= '0';
        wait for k_clk_period*1;
        
+       --test core functionality of right light
+       w_right <= '1'; wait for k_clk_period;
+            assert w_lights_R = "001" report "first right light didnt turn on" severity failure;
+       wait for k_clk_period;
+            assert w_lights_R = "011" report "second right light didnt turn on" severity failure;
+       wait for k_clk_period;
+            assert w_lights_R = "111" report "third right light didnt turn on" severity failure; 
+       wait for k_clk_period;
+       w_right <= '0';
        
+       --test the left lights with a reset after the first two lights come on
+       w_left <= '1'; wait for k_clk_period;
+            assert w_lights_L = "001" report "first left light didnt turn on" severity failure;
+       wait for k_clk_period;
+            assert w_lights_L = "011" report "second left light didnt turn on" severity failure;
+       w_reset <= '1';
+       wait for k_clk_period;
+            assert w_lights_L = "000" report "reset failed" severity failure; 
+       wait for k_clk_period*2;
+       w_left <= '0'; w_reset <= '0';
+       
+       -- test the hazard lights feature
+       w_left <= '1'; w_right <= '1';
+       wait for k_clk_period;
+            assert (w_lights_L = "111" and w_lights_R = "111") report "all lights not on" severity failure;
+       wait for k_clk_period;
+            assert (w_lights_L = "000" and w_lights_R = "000") report "all lights not off" severity failure;
+       
+       wait; 
 	end process;
-end test_bench;
+end;
